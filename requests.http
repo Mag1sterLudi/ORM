@@ -1,0 +1,99 @@
+# Сценарии проверки API для HTTP Client в IntelliJ IDEA (Ультимейт версия).
+# Рассчитаны на чистую базу с демо-данными. Целесообразно запускать по порядку сверху вниз
+# (или "Run All Requests in File"). Перед повторным прогоном необходимо пересоздать базу -
+#   docker compose down -v && docker compose up -d
+# Демо-данные - преподаватели id 2 и 3, студенты id 4, 5, 6; курс 1 "Основы Hibernate".
+
+### Структура курса (курс -> модули -> уроки)
+GET localhost:8080/api/courses/1/structure
+
+### Поиск по тегу
+GET localhost:8080/api/courses?tag=hibernate
+
+### Записать студентку Веру (id 6) на курс - 201
+POST localhost:8080/api/courses/1/enroll?userId=6
+
+### Повторная запись - 409
+POST localhost:8080/api/courses/1/enroll?userId=6
+
+### Записать преподавателя - 400
+POST localhost:8080/api/courses/1/enroll?userId=2
+
+### Студенты курса
+GET localhost:8080/api/courses/1/students
+
+### Создать задание к уроку 1 - 201
+POST localhost:8080/api/lessons/1/assignments
+Content-Type: application/json
+
+{"title": "ДЗ 2", "maxScore": 10}
+
+> {% client.global.set("assignmentId", response.body.id); %}
+
+### Вера сдаёт решение - 201
+POST localhost:8080/api/assignments/{{assignmentId}}/submit
+Content-Type: application/json
+
+{"studentId": 6, "content": "Моё решение"}
+
+> {% client.global.set("submissionId", response.body.id); %}
+
+### Повторная сдача - 409
+POST localhost:8080/api/assignments/{{assignmentId}}/submit
+Content-Type: application/json
+
+{"studentId": 6, "content": "Ещё одно решение"}
+
+### Оценка выше максимума - 400
+PUT localhost:8080/api/submissions/{{submissionId}}/grade
+Content-Type: application/json
+
+{"score": 11}
+
+### Нормальная оценка - 200
+PUT localhost:8080/api/submissions/{{submissionId}}/grade
+Content-Type: application/json
+
+{"score": 9, "feedback": "Хорошо"}
+
+### Решения студентки
+GET localhost:8080/api/users/6/submissions
+
+### Уведомления студентки (новое задание и оценка)
+GET localhost:8080/api/users/6/notifications
+
+### Тест (правильные ответы скрыты)
+GET localhost:8080/api/quizzes/1
+
+### Пройти тест на 100%
+POST localhost:8080/api/quizzes/1/take
+Content-Type: application/json
+
+{"studentId": 6, "answers": {"1": [1], "2": [3, 4]}}
+
+### Результаты теста
+GET localhost:8080/api/quizzes/1/results
+
+### Отзыв - 201
+POST localhost:8080/api/courses/1/reviews
+Content-Type: application/json
+
+{"studentId": 6, "rating": 4, "comment": "Полезно"}
+
+### Повторный отзыв - 409
+POST localhost:8080/api/courses/1/reviews
+Content-Type: application/json
+
+{"studentId": 6, "rating": 5, "comment": "Ещё раз"}
+
+### Удалить преподавателя с курсами - 409
+DELETE localhost:8080/api/users/2
+
+### Несуществующий курс - 404
+GET localhost:8080/api/courses/99999
+
+### Ошибки валидации - 400 с fieldErrors
+POST localhost:8080/api/users
+Content-Type: application/json
+
+{"name": "", "email": "плохой", "role": "STUDENT"}

@@ -1,0 +1,19 @@
+# Профиль разработки. Локальный PostgreSQL, SQL в логе, демо-данные при пустой БД.
+spring:
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/learning_platform}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
+  jpa:
+    show-sql: false
+
+logging:
+  level:
+    com.learning.platform: DEBUG
+    org.hibernate.SQL: DEBUG
+    # убирает предупреждения ddl-auto о несуществующих constraint при первом старте
+    org.hibernate.engine.jdbc.spi.SqlExceptionHelper: ERROR
+
+app:
+  demo-data:
+    enabled: ${DEMO_DATA:true}

@@ -1,0 +1,38 @@
+# Общие настройки для всех профилей
+# Параметры подключения к БД берутся из переменных окружения (DB_URL, DB_USERNAME, DB_PASSWORD)
+# значения по умолчанию для локальной разработки заданы в профиле dev
+spring:
+  application:
+    name: learning-platform
+  profiles:
+    default: dev
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+  jpa:
+    # Схема создаётся/обновляется автоматически по JPA-сущностям
+    hibernate:
+      ddl-auto: ${DDL_AUTO:update}
+    # Open Session In View отключён сознательно - все ленивые связи загружаются
+    # внутри транзакций сервисного слоя (JOIN FETCH / @EntityGraph / маппинг в DTO).
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+        # Ленивые связи догружаются пачками по 50, а не по одной (защита от N+1)
+        default_batch_fetch_size: 50
+        jdbc:
+          time_zone: UTC
+
+server:
+  port: ${SERVER_PORT:8080}
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+
+app:
+  demo-data:
+    enabled: false

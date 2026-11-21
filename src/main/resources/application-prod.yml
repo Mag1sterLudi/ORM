@@ -1,0 +1,15 @@
+# Продакшен-профиль. Все параметры подключения обязательны и задаются только через окружение.
+spring:
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+
+logging:
+  level:
+    root: INFO
+    com.learning.platform: INFO
+
+app:
+  demo-data:
+    enabled: ${DEMO_DATA:false}
